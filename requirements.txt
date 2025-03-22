@@ -1,0 +1,12 @@
+dash
+dash-bootstrap-components
+dash-table
+pandas
+ta
+googletrans==4.0.0-rc1
+selenium
+beautifulsoup4
+textblob
+nltk
+plotly
+requests
