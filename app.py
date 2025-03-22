@@ -23,6 +23,8 @@ import plotly.graph_objects as go
 import plotly.subplots as sp
 import nltk
 
+os.system("bash install_chrome.sh")
+
 nltk.download('punkt')
 nltk.download('stopwords')
 from nltk.corpus import stopwords
