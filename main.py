@@ -597,6 +597,6 @@ def create_recommendation_display(recommendation):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8106))
+    port = int(os.environ.get("PORT", 8107))
     app.run(host='0.0.0.0', port=port, debug=True)
 
