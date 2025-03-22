@@ -6,6 +6,7 @@ ta
 googletrans==4.0.0-rc1
 selenium
 webdriver-manager
+chromedriver-autoinstaller
 beautifulsoup4
 textblob
 nltk
