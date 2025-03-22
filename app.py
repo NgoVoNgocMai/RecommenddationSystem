@@ -5,9 +5,12 @@ import requests
 import ta
 import pandas as pd
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from googletrans import Translator
 from textblob import TextBlob
@@ -370,15 +373,20 @@ def update_content(overview_clicks, chart_clicks, news_clicks, analyze_clicks, i
 # Hàm lấy dữ liệu giao dịch cổ phiếu
 def fetch_stock_data(stock_code, days_limit=30):
     url = f"https://s.cafef.vn/Lich-su-giao-dich-{stock_code}-1.chn"
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
 
+    # Cấu hình ChromeDriver với WebDriver Manager
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    driver.get(url)
     all_data = []
     days_collected = 0
+
     header = [
         "Ngày", "Giá Đóng cửa (nghìn VNĐ)", "Giá Điều chỉnh (nghìn VNĐ)", "Thay đổi",
         "GD khớp lệnh (Khối lượng)", "GD khớp lệnh (Giá trị (tỷ VNĐ))",
@@ -388,17 +396,21 @@ def fetch_stock_data(stock_code, days_limit=30):
 
     while days_collected < days_limit:
         try:
+            # Chờ dữ liệu tải xong
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "wrapper-table-information-owner"))
             )
             page_html = driver.page_source
             soup = BeautifulSoup(page_html, "html.parser")
 
-            # Kiểm tra xem có thông báo "KHÔNG CÓ KẾT QUẢ PHÙ HỢP" hay không
+            # Kiểm tra nếu không có dữ liệu
             no_results_message = soup.find("td", colspan="13", string="KHÔNG CÓ KẾT QUẢ PHÙ HỢP")
             if no_results_message:
+                print("Không có dữ liệu phù hợp.")
+                driver.quit()
                 return None
 
+            # Lấy dữ liệu từ bảng
             data_div = soup.find("div", class_="wrapper-table-information-owner")
             body = data_div.find("tbody")
             if body:
@@ -411,16 +423,20 @@ def fetch_stock_data(stock_code, days_limit=30):
                         if days_collected >= days_limit:
                             break
 
+            # Nếu đã thu thập đủ ngày, thoát vòng lặp
             if days_collected >= days_limit:
                 break
+
+            # Nhấn nút "Next" để lấy dữ liệu trang tiếp theo
             next_button = driver.find_element(By.ID, "paging-right")
             driver.execute_script("arguments[0].click();", next_button)
             time.sleep(2)
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Lỗi: {e}")
             break
 
     driver.quit()
+
     if all_data:
         df_stock = pd.DataFrame(all_data, columns=header)
         df_stock['Ngày'] = pd.to_datetime(df_stock['Ngày'], format='%d/%m/%Y')

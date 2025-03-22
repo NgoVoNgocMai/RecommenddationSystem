@@ -33,8 +33,8 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # Biến toàn cục để lưu trữ mã cổ phiếu và nội dung trang Tổng quan
 stock_code = None
 overview_content = None
-df_stock = None  # Biến để lưu trữ dữ liệu cổ phiếu
-df_news = None  # Biến để lưu trữ dữ liệu tin tức
+df_stock = None
+df_news = None
 
 # Layout của ứng dụng
 app.layout = html.Div(
