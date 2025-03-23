@@ -16,6 +16,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y chromium-chromedriver \
     && apt-get clean
 
+# Kiểm tra và tạo liên kết nếu chưa tồn tại
+RUN if [ ! -f /usr/bin/google-chrome ]; then \
+        ln -s /usr/bin/google-chrome-stable /usr/bin/google-chrome; \
+    fi
+
 # Cài đặt Python và pip
 RUN apt-get install -y python3 python3-pip
 
